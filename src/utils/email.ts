@@ -1,19 +1,19 @@
 import nodemailer from 'nodemailer';
 
 
-const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: Number(process.env.EMAIL_PORT),
-    secure: true,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
-
 export const sendVerificationEmail = async (to: string, token: string) => {
+    const transporter = nodemailer.createTransport({
+        host: process.env.EMAIL_HOST,
+        port: Number(process.env.EMAIL_PORT),
+        secure: true,
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+        },
+    });
+
     try {
-        const verificationLink = `http://your-domain.com/api/auth/verify-email/${token}`;
+        const verificationLink = `http://localhost:3001/api/auth/verifyEmail/${token}`;
 
         await transporter.sendMail({
             from: '"StackMind" <no-reply@example.com>',
@@ -22,7 +22,7 @@ export const sendVerificationEmail = async (to: string, token: string) => {
             html: `<p>Please click on the link below to verify your email：</p><a href="${verificationLink}">${verificationLink}</a>`,
         })
     } catch (error) {
-        console.error('Failed to send password reset email:', error);
+        console.error('Failed to send verification email:', error);
         throw error;
     };
 };

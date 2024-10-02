@@ -41,3 +41,24 @@ export const registerUser = async (email: string, password: string, username: st
     // send verification email
     await sendVerificationEmail(user.email, verification_token);
 };
+
+/**
+ * @desc Verify mail in Token
+ * @param token generate from register function
+ * @throws throw an error when token expired
+ */
+export const verifyEmailToken = async (token: string): Promise<void> => {
+    const user = await User.findOne({
+        verification_token: token,
+        verification_token_expires_at: { $gt: new Date() },
+    });
+
+    if (!user) {
+        throw new Error('Invalid or expired verification link');
+    }
+
+    user.is_verified = true;
+    // user.verification_token = undefined;
+    // user.verification_token_expires_at = undefined;
+    await user.save();
+};

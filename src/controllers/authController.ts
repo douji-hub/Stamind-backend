@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { registerUser } from '../services/authServices';
+import { registerUser, verifyEmailToken } from '../services/authServices';
 
 export const register = async (req: Request, res: Response) => {
     try {
@@ -11,3 +11,12 @@ export const register = async (req: Request, res: Response) => {
     }
 };
 
+export const verifyEmail = async (req: Request, res: Response) => {
+    try {
+        const { token } = req.params;
+        await verifyEmailToken(token);
+        res.json({ message: 'Account verification successful, you can log in now' });
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
+    }
+};
