@@ -5,6 +5,7 @@ import routes from './routes';
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
+import routeHub from './routes/routeHub';
 
 dotenv.config();
 
@@ -23,6 +24,6 @@ app.use(cookieParser())
  * TODO: Code style: Use tools such as ESLint and Prettier to maintain style consistency 
  */
 
-app.use('/api', routes);
+app.use('/api', routeHub);
 
 export default app;
