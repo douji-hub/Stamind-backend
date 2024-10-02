@@ -1,58 +1,38 @@
-import mongoose, {Document, Schema} from "mongoose"
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
-interface IUser extends Document {
-    userId: string,
-    username: string,
-    account: string,
-    password: string,
-    spaces: Array<string>,
-    nowSpace: number,
-    verificationToken: string,
-    verificationTokenExpire: Date,
-    isValid: boolean
+export interface IUser extends Document {
+    email: string;
+    password_hash: string;
+    username: string;
+    is_verified: boolean;
+    verification_token?: string;
+    verification_token_expires_at?: Date;
+    password_reset_token?: string;
+    password_reset_expires_at?: Date;
+    last_login_time?: Date;
+    spaces: mongoose.Types.ObjectId[];
+    session_tokens: string[];
+    nowSpace: number;
 }
 
-const userSchema = new Schema<IUser>({
-    userId: {
-        type: String,
-        unique: true,
-        required: true,
-    },
-    username: {
-        type: String,
-        required: true,
-    },
-    account: {
-        type: String,
-        required: true,
-    },
-    password: {
-        type: String,
-        required: true,
-    },
-    spaces: {
-        type: [String],
-        required: true,
-    },
+const UserSchema: Schema<IUser> = new Schema({
+    email: { type: String, required: true, unique: true },
+    password_hash: { type: String, required: true },
+    username: { type: String, required: true },
+    is_verified: { type: Boolean, default: false },
+    verification_token: { type: String },
+    verification_token_expires_at: { type: Date },
+    password_reset_token: { type: String },
+    password_reset_expires_at: { type: Date },
+    last_login_time: { type: Date },
+    spaces: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Space' }],
+    session_tokens: [{ type: String }],
     nowSpace: {
         type: Number,
         required: true,
     },
-    verificationToken: {
-        type: String,
-        required: true
-    },
-    verificationTokenExpire: {
-        type: Date,
-        required: true
-    },
-    isValid: {
-        type: Boolean,
-        required: true
-    }
 }, {
-    timestamps: true,
-})
+    timestamps: true
+});
 
-
-export default mongoose.model<IUser>('users', userSchema);
+export default mongoose.model<IUser>('User', UserSchema);

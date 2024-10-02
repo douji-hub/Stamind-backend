@@ -1,8 +1,8 @@
-import mongoose, {Document, Schema} from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 
 interface ISpace extends Document {
     spaceId: string,
-    blocks: Array<string>,
+    blocks: mongoose.Types.ObjectId[];
     nowBlock: number,
 }
 
@@ -11,10 +11,10 @@ const spaceSchema = new Schema<ISpace>({
         type: String,
         required: true,
     },
-    blocks: {
-        type: [String],
-        required: true
-    },
+    blocks: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Block'
+    }],
     nowBlock: {
         type: Number,
         required: true,
