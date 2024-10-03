@@ -40,7 +40,6 @@ export const loginController = async (req: Request, res: Response) => {
 
 export const logoutController = async (req: Request, res: Response) => {
     try {
-        // ?: use Token to implement SSO, but may remove statelessness
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) {
             return res.status(401).json({ message: 'Unauthorized request' });

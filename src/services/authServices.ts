@@ -91,7 +91,7 @@ export const loginUserService = async (email: string, password: string): Promise
     }
 
     // JWT Token
-    const token = jwt.sign({ userId: user._id, username: user.username }, JWT_SECRET_KEY, { expiresIn: '7d' });
+    const token = jwt.sign({ userId: user._id }, JWT_SECRET_KEY, { expiresIn: '7d' });
 
     // update last login time and JWT Token
     user.last_login_time = new Date();
@@ -111,7 +111,10 @@ export const loginUserService = async (email: string, password: string): Promise
  * TODO: Record user information
  */
 export const logoutUserService = async (token: string): Promise<void> => {
-    const decoded: any = jwt.verify(token, JWT_SECRET);
+
+    const JWT_SECRET_KEY = process.env.JWT_SECRET;
+
+    const decoded: any = jwt.verify(token, JWT_SECRET_KEY);
     const user = await User.findById(decoded.userId);
 
     // ?: use Token to implement SSO, but may remove statelessness

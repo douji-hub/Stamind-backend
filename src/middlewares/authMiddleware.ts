@@ -12,7 +12,11 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
             return res.status(401).json({ message: 'Authorization header not provided' });
         }
 
-        const token = authHeader.split(' ')[1];
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ message: 'Unprovided or malformed authorization header' });
+        }
+
+        const token = authHeader.substring(7); // remove 'Bearer '
         const decoded: any = jwt.verify(token, JWT_SECRET);
 
         const user = await User.findById(decoded.userId);
