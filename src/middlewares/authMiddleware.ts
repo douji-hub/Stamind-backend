@@ -20,7 +20,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         const decoded: any = jwt.verify(token, JWT_SECRET);
 
         const user = await User.findById(decoded.userId);
-        if (!user || !user.session_tokens.includes(token)) {
+        if (!user || !user.sessionTokens.includes(token)) {
             return res.status(401).json({ message: 'Unauthorized request' });
         }
 
