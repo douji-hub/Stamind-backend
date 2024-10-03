@@ -31,6 +31,8 @@ export const registerUser = async (email: string, password: string, username: st
         verification_token_expires_at,
         spaces: [],
         blocks: [],
+
+        // ?: use Token to implement SSO, but may remove statelessness
         session_tokens: [],
     });
 
@@ -56,8 +58,6 @@ export const verifyEmailToken = async (token: string): Promise<void> => {
     }
 
     user.is_verified = true;
-    // user.verification_token = undefined;
-    // user.verification_token_expires_at = undefined;
     await user.save();
 };
 
@@ -95,6 +95,10 @@ export const loginUser = async (email: string, password: string): Promise<string
 
     // update last login time and JWT Token
     user.last_login_time = new Date();
+
+    // ?: use Token to implement SSO, but may remove statelessness
+    user.session_tokens.push(token);
+
     await user.save();
 
     return token;
@@ -109,4 +113,10 @@ export const loginUser = async (email: string, password: string): Promise<string
 export const logoutUser = async (userId: user._id, token: string): Promise<void> => {
     const decoded: any = jwt.verify(token, JWT_SECRET);
     const user = await User.findById(decoded.userId);
+
+    // ?: use Token to implement SSO, but may remove statelessness
+    if (user) {
+        user.session_tokens = user.session_tokens.filter((t) => t !== token);
+        await user.save();
+    }
 };
