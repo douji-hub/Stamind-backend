@@ -11,7 +11,7 @@ import { sendVerificationEmail, sendForgetPasswordEmail } from '../utils/email';
  * @param username user's username
  * @throws throw an error when email is registered
  */
-export const registerUser = async (email: string, password: string, username: string): Promise<void> => {
+export const registerUserService = async (email: string, password: string, username: string): Promise<void> => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
         throw new Error('This email has been registered');
@@ -47,7 +47,7 @@ export const registerUser = async (email: string, password: string, username: st
  * @param token generate from register function
  * @throws throw an error when token expired
  */
-export const verifyEmailToken = async (token: string): Promise<void> => {
+export const verifyEmailTokenService = async (token: string): Promise<void> => {
     const user = await User.findOne({
         verification_token: token,
         verification_token_expires_at: { $gt: new Date() },
@@ -68,7 +68,7 @@ export const verifyEmailToken = async (token: string): Promise<void> => {
  * @throws throw an error when invalid email or password
  * @throws throw an error when account not verify
  */
-export const loginUser = async (email: string, password: string): Promise<string> => {
+export const loginUserService = async (email: string, password: string): Promise<string> => {
 
     const JWT_SECRET_KEY = process.env.JWT_SECRET;
 
@@ -110,7 +110,7 @@ export const loginUser = async (email: string, password: string): Promise<string
  * ------------------------------------------------------------
  * TODO: Record user information
  */
-export const logoutUser = async (userId: user._id, token: string): Promise<void> => {
+export const logoutUserService = async (userId: user._id, token: string): Promise<void> => {
     const decoded: any = jwt.verify(token, JWT_SECRET);
     const user = await User.findById(decoded.userId);
 
@@ -124,8 +124,9 @@ export const logoutUser = async (userId: user._id, token: string): Promise<void>
 /**
  * @desc Reset password
  * @param email user's email
+ * @throws throw an error when no account for this email
  */
-export const forgetPassword = async (email: string): Promise<void> => {
+export const forgetPasswordService = async (email: string): Promise<void> => {
     const user = await User.findOne({ email });
     if (!user) {
         throw new Error('There is no account for this email');
@@ -145,8 +146,9 @@ export const forgetPassword = async (email: string): Promise<void> => {
 /**
  * @desc Reset password
  * @param email user's email
+ * @throws throw an error when invalid or expired password reset link
  */
-export const resetPassword = async (token: string, newPassword: string): Promise<void> => {
+export const resetPasswordService = async (token: string, newPassword: string): Promise<void> => {
     const user = await User.findOne({
         password_reset_token: token,
         password_reset_expires_at: { $gt: new Date() },

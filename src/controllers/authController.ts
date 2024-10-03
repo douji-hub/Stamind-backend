@@ -1,63 +1,72 @@
 import { Request, Response } from 'express';
-import { registerUser, verifyEmailToken, loginUser, forgetPassword, resetPassword } from '../services/authServices';
+import {
+    registerUserService,
+    verifyEmailTokenService,
+    loginUserService,
+    logoutUserService,
+    forgetPasswordService,
+    resetPasswordService
+} from '../services/authServices';
 
-export const register = async (req: Request, res: Response) => {
+export const registerController = async (req: Request, res: Response) => {
     try {
         const { email, password, username } = req.body;
-        await registerUser(email, password, username);
+        await registerUserService(email, password, username);
         res.status(201).json({ message: 'Please check your email to verify account' });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }
 };
 
-export const verifyEmail = async (req: Request, res: Response) => {
+export const verifyEmailController = async (req: Request, res: Response) => {
     try {
         const { token } = req.params;
-        await verifyEmailToken(token);
+        await verifyEmailTokenService(token);
         res.json({ message: 'Account verification successful, you can log in now' });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const loginController = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
-        const token = await loginUser(email, password);
+        const token = await loginUserService(email, password);
         res.json({ token });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }
 };
 
-export const logout = async (req: Request, res: Response) => {
+export const logoutController = async (req: Request, res: Response) => {
     try {
+        // ?: use Token to implement SSO, but may remove statelessness
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) {
             return res.status(401).json({ message: 'Unauthorized request' });
         }
-        await logoutUser(token);
+
+        await logoutUserService(token);
         res.json({ message: 'Logout successful' });
     } catch (error: any) {
         res.status(500).json({ message: 'Logout failed', error: error.message });
     }
 };
 
-export const forgotPassword = async (req: Request, res: Response) => {
+export const forgotPasswordController = async (req: Request, res: Response) => {
     try {
         const { email } = req.body;
-        await forgetPassword(email);
+        await forgetPasswordService(email);
         res.json({ message: 'Password reset email has been sent, please check your email' });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }
 };
 
-export const resetPassword = async (req: Request, res: Response) => {
+export const resetPasswordController = async (req: Request, res: Response) => {
     try {
         const { token, newPassword } = req.body;
-        await resetPassword(token, newPassword);
+        await resetPasswordService(token, newPassword);
         res.json({ message: 'Password reset successful, you can login now' });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
