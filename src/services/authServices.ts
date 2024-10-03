@@ -110,7 +110,7 @@ export const loginUserService = async (email: string, password: string): Promise
  * ------------------------------------------------------------
  * TODO: Record user information
  */
-export const logoutUserService = async (userId: user._id, token: string): Promise<void> => {
+export const logoutUserService = async (token: string): Promise<void> => {
     const decoded: any = jwt.verify(token, JWT_SECRET);
     const user = await User.findById(decoded.userId);
 
