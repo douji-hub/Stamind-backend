@@ -2,7 +2,7 @@ import app from './app';
 import mongoose from "mongoose"
 import './database/mongodb'
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 
 app.listen(PORT, () => {
@@ -13,3 +13,4 @@ app.listen(PORT, () => {
 const mongoDbStatus = mongoose.connection
 mongoDbStatus.on('error', err => console.error('connection error', err))
 mongoDbStatus.once('open', (db) => console.log('Connection to mongodb'))
+
