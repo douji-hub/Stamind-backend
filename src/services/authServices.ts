@@ -4,8 +4,6 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../utils/email';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
-
 /**
  * @desc Register
  * @param email user's email
@@ -61,4 +59,43 @@ export const verifyEmailToken = async (token: string): Promise<void> => {
     // user.verification_token = undefined;
     // user.verification_token_expires_at = undefined;
     await user.save();
+};
+
+/**
+ * @desc Login in email and password
+ * @param email user's email
+ * @param password user's password
+ * @throws throw an error when invalid email or password
+ * @throws throw an error when account not verify
+ */
+export const loginUser = async (email: string, password: string): Promise<string> => {
+
+    const JWT_SECRET_KEY = process.env.JWT_SECRET;
+
+    const user = await User.findOne({ email });
+
+    // check user
+    if (!user) {
+        throw new Error('Invalid email or password');
+    }
+
+    // check password
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+    if (!isMatch) {
+        throw new Error('Invalid email or password');
+    }
+
+    // check account is verified
+    if (!user.is_verified) {
+        throw new Error('Account not verified yet, please check your email');
+    }
+
+    // JWT Token
+    const token = jwt.sign({ userId: user._id, username: user.username }, JWT_SECRET_KEY, { expiresIn: '7d' });
+
+    // update last login time and JWT Token
+    user.last_login_time = new Date();
+    await user.save();
+
+    return token;
 };
