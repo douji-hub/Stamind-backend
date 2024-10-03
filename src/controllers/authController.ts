@@ -30,3 +30,16 @@ export const login = async (req: Request, res: Response) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+export const logout = async (req: Request, res: Response) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ message: 'Unauthorized request' });
+        }
+        await logoutUser(token);
+        res.json({ message: 'Logout successful' });
+    } catch (error: any) {
+        res.status(500).json({ message: 'Logout failed', error: error.message });
+    }
+};
