@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { registerUser, verifyEmailToken, loginUser } from '../services/authServices';
+import { registerUser, verifyEmailToken, loginUser, forgetPassword, resetPassword } from '../services/authServices';
 
 export const register = async (req: Request, res: Response) => {
     try {
@@ -41,5 +41,25 @@ export const logout = async (req: Request, res: Response) => {
         res.json({ message: 'Logout successful' });
     } catch (error: any) {
         res.status(500).json({ message: 'Logout failed', error: error.message });
+    }
+};
+
+export const forgotPassword = async (req: Request, res: Response) => {
+    try {
+        const { email } = req.body;
+        await forgetPassword(email);
+        res.json({ message: 'Password reset email has been sent, please check your email' });
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+    try {
+        const { token, newPassword } = req.body;
+        await resetPassword(token, newPassword);
+        res.json({ message: 'Password reset successful, you can login now' });
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
     }
 };

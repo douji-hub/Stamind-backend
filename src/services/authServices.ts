@@ -2,7 +2,7 @@ import User, { IUser } from '../models/user';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { sendVerificationEmail, sendPasswordResetEmail } from '../utils/email';
+import { sendVerificationEmail, sendForgetPasswordEmail } from '../utils/email';
 
 /**
  * @desc Register
@@ -119,4 +119,44 @@ export const logoutUser = async (userId: user._id, token: string): Promise<void>
         user.session_tokens = user.session_tokens.filter((t) => t !== token);
         await user.save();
     }
+};
+
+/**
+ * @desc Reset password
+ * @param email user's email
+ */
+export const forgetPassword = async (email: string): Promise<void> => {
+    const user = await User.findOne({ email });
+    if (!user) {
+        throw new Error('There is no account for this email');
+    }
+
+    const password_reset_token = crypto.randomBytes(32).toString('hex');
+    const password_reset_expires_at = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hour
+
+    user.password_reset_token = password_reset_token;
+    user.password_reset_expires_at = password_reset_expires_at;
+    await user.save();
+
+    // send forget password email
+    await sendForgetPasswordEmail(user.email, password_reset_token);
+};
+
+/**
+ * @desc Reset password
+ * @param email user's email
+ */
+export const resetPassword = async (token: string, newPassword: string): Promise<void> => {
+    const user = await User.findOne({
+        password_reset_token: token,
+        password_reset_expires_at: { $gt: new Date() },
+    });
+
+    if (!user) {
+        throw new Error('Invalid or expired password reset link');
+    }
+
+    user.password_hash = await bcrypt.hash(newPassword, 10);
+
+    await user.save();
 };

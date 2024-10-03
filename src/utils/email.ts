@@ -27,3 +27,18 @@ export const sendVerificationEmail = async (to: string, token: string) => {
     };
 };
 
+
+export const sendForgetPasswordEmail = async (to: string, token: string) => {
+
+    // !: Need to switch to the frontEnd password reset page with token
+    // !: The frontEnd page needs to be called http://localhost:3001/api/auth/resetPassword with token and new password
+
+    const resetLink = `https://www.youtube.com/watch?v=1SPM98_XU2c`;
+
+    await transporter.sendMail({
+        from: '"StackMind" <no-reply@example.com>',
+        to,
+        subject: 'Reset your password',
+        html: `<p>Please click the link below to reset your password：</p><a href="${resetLink}">${resetLink}</a>`,
+    });
+};
