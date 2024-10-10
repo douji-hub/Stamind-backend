@@ -1,5 +1,5 @@
 import User, { IUser } from '../models/user';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { sendVerificationEmail, sendForgetPasswordEmail } from '../utils/email';
