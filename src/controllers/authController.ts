@@ -7,6 +7,7 @@ import {
     forgetPasswordService,
     resetPasswordService
 } from '../services/authServices';
+import {IRequestWithUser} from "../interfaces/globalInterface";
 
 export const registerController = async (req: Request, res: Response) => {
     try {
@@ -38,11 +39,13 @@ export const loginController = async (req: Request, res: Response) => {
     }
 };
 
-export const logoutController = async (req: Request, res: Response) => {
+// After Login, req need to be using IRequestWithUser
+export const logoutController = async (req: IRequestWithUser, res: Response) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) {
-            return res.status(401).json({ message: 'Unauthorized request' });
+            res.status(401).json({ message: 'Unauthorized request' })
+            return
         }
 
         await logoutUserService(token);
