@@ -1,5 +1,5 @@
-import User, { IUser } from '../models/user';
 import bcrypt from 'bcryptjs';
+import User from '../models/user';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { sendVerificationEmail, sendForgetPasswordEmail } from '../utils/email';
@@ -69,38 +69,38 @@ export const verifyEmailTokenService = async (token: string): Promise<void> => {
  */
 export const loginUserService = async (email: string, password: string): Promise<string> => {
 
-    const JWT_SECRET_KEY = process.env.JWT_SECRET;
+    const JWT_SECRET: string = process.env.JWT_SECRET || '';
 
     const user = await User.findOne({ email });
 
     // check user
     if (!user) {
         throw new Error('Invalid email or password');
+    } else {
+        // check password
+        const isMatch = await bcrypt.compare(password, user.passwordHash);
+        if (!isMatch) {
+            throw new Error('Invalid email or password');
+        }
+
+        // check account is verified
+        if (!user.isVerified) {
+            throw new Error('Account not verified yet, please check your email');
+        }
+
+        // JWT Token
+        const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '7d' });
+
+        // update last login time and JWT Token
+        user.lastLoginTime = new Date();
+
+        // ?: use Token to implement SSO, but may remove statelessness
+        user.sessionTokens = token
+
+        await user.save();
+
+        return token;
     }
-
-    // check password
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!isMatch) {
-        throw new Error('Invalid email or password');
-    }
-
-    // check account is verified
-    if (!user.isVerified) {
-        throw new Error('Account not verified yet, please check your email');
-    }
-
-    // JWT Token
-    const token = jwt.sign({ userId: user._id }, JWT_SECRET_KEY, { expiresIn: '7d' });
-
-    // update last login time and JWT Token
-    user.lastLoginTime = new Date();
-
-    // ?: use Token to implement SSO, but may remove statelessness
-    user.sessionTokens.push(token);
-
-    await user.save();
-
-    return token;
 };
 
 /**
@@ -111,14 +111,15 @@ export const loginUserService = async (email: string, password: string): Promise
  */
 export const logoutUserService = async (token: string): Promise<void> => {
 
-    const JWT_SECRET_KEY = process.env.JWT_SECRET;
+    const JWT_SECRET: string = process.env.JWT_SECRET || '';
 
-    const decoded: any = jwt.verify(token, JWT_SECRET_KEY);
+
+    const decoded: any = jwt.verify(token, JWT_SECRET);
     const user = await User.findById(decoded.userId);
 
     // ?: use Token to implement SSO, but may remove statelessness
     if (user) {
-        user.sessionTokens = user.sessionTokens.filter((t) => t !== token);
+        user.sessionTokens = ''
         await user.save();
     }
 };
