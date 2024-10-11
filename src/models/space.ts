@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 
-interface ISpace extends Document {
+export interface ISpace extends Document {
     spaceId: string,
     blocks: mongoose.Types.ObjectId[];
     nowBlock: number,
