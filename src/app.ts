@@ -5,6 +5,8 @@ import routes from './routes';
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
+import swaggerUi from 'swagger-ui-express';
+import { swaggerDocs } from './swagger/swaggerDocs';
 import routeHub from './routes/routeHub';
 
 dotenv.config();
@@ -25,5 +27,6 @@ app.use(cookieParser())
  */
 
 app.use('/api', routeHub);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 export default app;
