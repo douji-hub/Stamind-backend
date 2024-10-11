@@ -1,7 +1,7 @@
 import mongoose, {Document, Schema} from "mongoose"
 
-// 定義 TypeScript 接口來描述資料結構
-interface IValidatePasswordStatus extends Document {
+// 定義 TypeScript 介面來描述資料結構
+export interface IValidatePasswordStatus extends Document {
     userId: string;
     expireTime: Date;
     account: string;

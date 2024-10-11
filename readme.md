@@ -68,8 +68,9 @@ npm run dev
 
 - `npm run build`：編譯 TypeScript 程式碼。
 - `npm start`：啟動已編譯的伺服器。
-- `npm run dev`：以開發模式啟動伺服器（使用 `nodemon`）。
+- `npm run dev`：以開發模式啟動伺服器（使用 `ts-node-dev`）。
 - `npm test`：運行測試。
+- `npx tsc --noEmit`：運行 ts 測試，若無問題則不會輸出內容。
 
 ## 資料夾結構
 

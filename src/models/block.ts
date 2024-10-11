@@ -1,16 +1,16 @@
 import mongoose, {Document, Schema} from "mongoose";
 
-interface IBlockSetting {
+export interface IBlockSetting {
     color: string,
     theme: string,
 }
 
-interface IBlockNote {
+export interface IBlockNote {
     noteContent: string,
     image: Array<string>,
 }
 
-interface IBlockCode {
+export interface IBlockCode {
     codeContent: string,
     codeType: string,
 }
@@ -19,7 +19,7 @@ interface IBlockCode {
 //     gptContent: object,
 // }
 
-interface IBlock extends Document {
+export interface IBlock extends Document {
     spaceId: string,
     blockId: string,
     blockName: string,
