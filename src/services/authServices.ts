@@ -1,8 +1,8 @@
+import bcrypt from 'bcryptjs';
 import User from '../models/user';
-import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import {sendVerificationEmail, sendForgetPasswordEmail} from '../utils/email';
+import { sendVerificationEmail, sendForgetPasswordEmail } from '../utils/email';
 
 /**
  * @desc Register
@@ -12,7 +12,7 @@ import {sendVerificationEmail, sendForgetPasswordEmail} from '../utils/email';
  * @throws throw an error when email is registered
  */
 export const registerUserService = async (email: string, password: string, username: string): Promise<void> => {
-    const existingUser = await User.findOne({email});
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
         throw new Error('This email has been registered');
     }
@@ -49,7 +49,7 @@ export const registerUserService = async (email: string, password: string, usern
 export const verifyEmailTokenService = async (token: string): Promise<void> => {
     const user = await User.findOne({
         verificationToken: token,
-        verificationTokenExpiresAt: {$gt: new Date()},
+        verificationTokenExpiresAt: { $gt: new Date() },
     });
 
     if (!user) {
@@ -71,7 +71,7 @@ export const loginUserService = async (email: string, password: string): Promise
 
     const JWT_SECRET: string = process.env.JWT_SECRET || '';
 
-    const user = await User.findOne({email});
+    const user = await User.findOne({ email });
 
     // check user
     if (!user) {
@@ -89,7 +89,7 @@ export const loginUserService = async (email: string, password: string): Promise
         }
 
         // JWT Token
-        const token = jwt.sign({userId: user._id}, JWT_SECRET, {expiresIn: '7d'});
+        const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '7d' });
 
         // update last login time and JWT Token
         user.lastLoginTime = new Date();
@@ -130,7 +130,7 @@ export const logoutUserService = async (token: string): Promise<void> => {
  * @throws throw an error when no account for this email
  */
 export const forgetPasswordService = async (email: string): Promise<void> => {
-    const user = await User.findOne({email});
+    const user = await User.findOne({ email });
     if (!user) {
         throw new Error('There is no account for this email');
     }
@@ -154,7 +154,7 @@ export const forgetPasswordService = async (email: string): Promise<void> => {
 export const resetPasswordService = async (token: string, newPassword: string): Promise<void> => {
     const user = await User.findOne({
         passwordResetToken: token,
-        passwordResetExpiresAt: {$gt: new Date()},
+        passwordResetExpiresAt: { $gt: new Date() },
     });
 
     if (!user) {

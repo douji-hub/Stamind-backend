@@ -1,0 +1,45 @@
+services:
+  app1:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/stamind
+      - INSTANCE_NAME=app1
+    depends_on:
+      - mongo
+    volumes:
+      - .:/usr/src/app
+
+  app2:
+    build: .
+    ports:
+      - "3002:3001"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/stamind
+      - INSTANCE_NAME=app2
+    depends_on:
+      - mongo
+    volumes:
+      - .:/usr/src/app
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf  # 將本地 Nginx 組態檔案對應到 Nginx 容器
+    # 確保 Nginx 在兩個應用啟動後再啟動
+    depends_on:
+      - app1
+      - app2  
+
+volumes:
+  mongo-data:

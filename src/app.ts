@@ -25,6 +25,14 @@ app.use(cookieParser())
  * TODO: Code style: Use tools such as ESLint and Prettier to maintain style consistency
  */
 
+
+// for check nginx load balance
+const INSTANCE_NAME: String = process.env.INSTANCE_NAME || "app";
+
+app.get('/', (req, res) => {
+    res.send(`Hello from ${INSTANCE_NAME}`);
+});
+
 app.use('/api', routeHub);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 

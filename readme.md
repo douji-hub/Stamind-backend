@@ -72,21 +72,41 @@ npm run dev
 - `npm test`：運行測試。
 - `npx tsc --noEmit`：運行 ts 測試，若無問題則不會輸出內容。
 
+## 以 Docker 安裝
+
+請確保您的環境已經安裝 [Docker](https://www.docker.com/)
+
+```bash
+# docker compose 建立 image 並啟動
+docker compose up --build
+
+# 確定所有 images 已啟動
+docker compose ps
+```
+
+因 nginx 設定 PORT 80，故伺服器預設會在 `http://localhost` 運行。
+
 ## 資料夾結構
 
 ```
 Stamind-backend/
 ├── src/
 │   ├── controllers/
-│   ├── datebase/
+│   ├── database/
+|   ├── interfaces/
 │   ├── middlewares/
 │   ├── models/
 │   ├── routes/
 │   ├── services/
+│   ├── swagger/
 │   ├── utils/
 │   └── app.ts
 │   └── server.ts
 ├── tests/
+├── nginx/
+├── .github/
+├── Dockerfile
+├── docker-compose.yaml
 ├── package.json
 ├── tsconfig.json
 └── README.md
@@ -99,7 +119,12 @@ Stamind-backend/
 - `src/models`: 處理 DB 的 Collection Schema 相關設定。
 - `src/routes`: API Endpoint。
 - `src/services`: 處理資料相關的交換、控制。
+- `src/swagger`: API 文件。
 - `src/utils`: 功能。
 - `src/app.ts`: Server 相關設定。
 - `src/server.ts`: Server 主要之開啟節點。
 - `tests/`：包含測試檔案。
+- `nginx/`：nginx 設定。
+- `.git/`：git action 設定。
+- `Dockerfile`：Application docker setting。
+- `docker-compose.yaml`：docker compose 設定。
