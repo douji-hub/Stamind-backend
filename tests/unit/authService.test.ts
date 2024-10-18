@@ -22,7 +22,7 @@ jest.mock('jsonwebtoken');
 jest.mock('../../src/utils/email');
 jest.mock('crypto', () => ({
   ...jest.requireActual('crypto'),
-  randomBytes: jest.fn(() => Buffer.from('mocked_token'))
+  randomBytes: jest.fn((size) => Buffer.alloc(size))
 }));
 
 describe('authServices', () => {
