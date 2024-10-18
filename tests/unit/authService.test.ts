@@ -69,7 +69,6 @@ describe('authServices', () => {
 
       // Simulate a user profile stored in the database
       const user = new User({
-        _id: new mongoose.Types.ObjectId(),
         email: 'test@example.com',
         passwordHash: "hashedPassword",
         username: 'testuser',
@@ -107,7 +106,6 @@ describe('authServices', () => {
 
       // simulate a user stored in the database
       const user = new User({
-        _id: new mongoose.Types.ObjectId(),
         email: 'test@example.com',
         passwordHash: "hashedPassword",
         username: 'testuser',
@@ -122,9 +120,11 @@ describe('authServices', () => {
     });
 
     it('should throw an error if the account is not verified', async () => {
+      // Mock bcrypt.compare returns false, indicating that the passwords match
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
       // simulate a user not verified
       const user = new User({
-        _id: new mongoose.Types.ObjectId(),
         email: 'test@example.com',
         passwordHash: "hashedPassword",
         username: 'testuser',
@@ -132,195 +132,206 @@ describe('authServices', () => {
       });
       await user.save();
 
-      await expect(loginUserService('test@example.com', 'password123'))
+      await expect(loginUserService('test@example.com', 'password'))
         .rejects
         .toThrow('Account not verified yet, please check your email');
     });
   });
 
 
-  // /**
-  //  * @registerUserService
-  //  * Test goal: Test registerUserService to ensure that logic such as password encryption and verification email sending operates normally during the user registration process
-  //  * Test scope: Test user registration functions, including email checking, password encryption, generating verification tokens and sending verification emails
-  //  * Does not test specific implementations of password encryption or email sending
-  //  */
-  // describe('registerUserService', () => {
-  //   it('should register a new user and send verification email', async () => {
+  /**
+   * @registerUserService
+   * Test goal: Test registerUserService to ensure that logic such as password encryption and verification email sending operates normally during the user registration process
+   * Test scope: Test user registration functions, including email checking, password encryption, generating verification tokens and sending verification emails
+   * Does not test specific implementations of password encryption or email sending
+   */
+  describe('registerUserService', () => {
+    it('should register a new user and send verification email', async () => {
 
-  //     (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
 
-  //     // simulate sending verification email function
-  //     (sendVerificationEmail as jest.Mock).mockResolvedValue(true);
+      // simulate sending verification email function
+      (sendVerificationEmail as jest.Mock).mockResolvedValue(true);
 
-  //     await registerUserService('test@example.com', 'password123', 'testuser');
+      await registerUserService('test@example.com', 'password123', 'testuser');
 
-  //     // query the database to check whether the user has registered
-  //     const user = await User.findOne({ email: 'test@example.com' });
+      // query the database to check whether the user has registered
+      const user = await User.findOne({ email: 'test@example.com' });
 
-  //     // check if user data is stored correctly
-  //     expect(user).toBeTruthy();
-  //     expect(user?.username).toBe('testuser');
-  //     expect(user?.passwordHash).toBe('hashedPassword');
-  //     expect(user?.isVerified).toBe(false);
-  //     expect(user?.verificationToken).toBeTruthy();
+      // check if user data is stored correctly
+      expect(user).toBeTruthy();
+      expect(user?.username).toBe('testuser');
+      expect(user?.passwordHash).toBe('hashedPassword');
+      expect(user?.isVerified).toBe(false);
+      expect(user?.verificationToken).toBeTruthy();
 
-  //     /// check whether a verification email was sent
-  //     expect(sendVerificationEmail).toHaveBeenCalledWith('test@example.com', user?.verificationToken);
-  //   });
+      /// check whether a verification email was sent
+      expect(sendVerificationEmail).toHaveBeenCalledWith('test@example.com', user?.verificationToken);
+    });
 
-  //   it('should throw an error if the email is already registered', async () => {
-  //     (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+    it('should throw an error if the email is already registered', async () => {
+      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
 
-  //     const existingUser = new User({
-  //       email: 'test@example.com',
-  //       passwordHash: 'hashedPassword',
-  //       username: 'existinguser',
-  //       isVerified: true,
-  //     });
-  //     await existingUser.save();
+      const existingUser = new User({
+        email: 'test@example.com',
+        passwordHash: 'hashedPassword',
+        username: 'existinguser',
+        isVerified: true,
+      });
+      await existingUser.save();
 
-  //     // test repeated registration
-  //     await expect(registerUserService('test@example.com', 'password123', 'newuser'))
-  //       .rejects
-  //       .toThrow('This email has been registered');
-  //   });
-  // });
+      // test repeated registration
+      await expect(registerUserService('test@example.com', 'password123', 'newuser'))
+        .rejects
+        .toThrow('This email has been registered');
+    });
+  });
 
 
-  // /**
-  //  * @verifyEmailTokenService
-  //  * Test goal: Verify that the email token is correct and not expired, and complete user verification
-  //  * Test scope: Test the email verification function, including whether the token is valid and not expired
-  //  * The specific implementation of token generation is not tested
-  //  */
-  // describe('verifyEmailTokenService', () => {
-  //   it('should verify the token and update the user as verified', async () => {
-  //     const user = new User({
-  //       email: 'test@example.com',
-  //       passwordHash: 'hashedPassword',
-  //       username: 'testuser',
-  //       isVerified: false,
-  //       verificationToken: 'validToken',
-  //       verificationTokenExpiresAt: new Date(Date.now() + 1000 * 60 * 60),
-  //     });
-  //     await user.save();
+  /**
+   * @verifyEmailTokenService
+   * Test goal: Verify that the email token is correct and not expired, and complete user verification
+   * Test scope: Test the email verification function, including whether the token is valid and not expired
+   * The specific implementation of token generation is not tested
+   */
+  describe('verifyEmailTokenService', () => {
+    it('should verify the token and update the user as verified', async () => {
+      const user = new User({
+        email: 'test@example.com',
+        passwordHash: 'hashedPassword',
+        username: 'testuser',
+        isVerified: false,
+        verificationToken: 'validToken',
+        verificationTokenExpiresAt: new Date(Date.now() + 1000 * 60 * 60),
+      });
+      await user.save();
 
-  //     await verifyEmailTokenService('validToken');
+      await verifyEmailTokenService('validToken');
 
-  //     const updatedUser = await User.findOne({ email: 'test@example.com' });
-  //     expect(updatedUser?.isVerified).toBe(true);
-  //   });
+      const updatedUser = await User.findOne({ email: 'test@example.com' });
+      expect(updatedUser?.isVerified).toBe(true);
+    });
 
-  //   it('should throw an error if the token is invalid or expired', async () => {
-  //     const user = new User({
-  //       email: 'test@example.com',
-  //       passwordHash: 'hashedPassword',
-  //       username: 'testuser',
-  //       isVerified: false,
-  //       verificationToken: 'expiredToken',
-  //       verificationTokenExpiresAt: new Date(Date.now() - 1000 * 60),
-  //     });
-  //     await user.save();
+    it('should throw an error if the token is invalid or expired', async () => {
+      const user = new User({
+        email: 'test@example.com',
+        passwordHash: 'hashedPassword',
+        username: 'testuser',
+        isVerified: false,
+        verificationToken: 'expiredToken',
+        verificationTokenExpiresAt: new Date(Date.now() - 1000 * 60),
+      });
+      await user.save();
 
-  //     await expect(verifyEmailTokenService('expiredToken'))
-  //       .rejects
-  //       .toThrow('Invalid or expired verification link');
-  //   });
-  // });
+      await expect(verifyEmailTokenService('expiredToken'))
+        .rejects
+        .toThrow('Invalid or expired verification link');
+    });
+  });
 
-  // /**
-  //  * @logoutUserService
-  //  * Test goal: Test whether the user can log out successfully and remove the token from the session
-  //  * Test scope: Test the logout function to ensure that the user's sessionTokens are cleared
-  //  */
-  // describe('logoutUserService', () => {
-  //   it('should remove the token from the user\'s sessionTokens', async () => {
-  //     (jwt.verify as jest.Mock).mockReturnValue({ userId: 'mockedUserId' });
+  /**
+   * @logoutUserService
+   * Test goal: Test whether the user can log out successfully and remove the token from the session
+   * Test scope: Test the logout function to ensure that the user's sessionTokens are cleared
+   */
+  describe('logoutUserService', () => {
+    it('should remove the token from the user\'s sessionTokens', async () => {
+      const mockedUserId = new mongoose.Types.ObjectId();
 
-  //     const user = new User({
-  //       _id: 'mockedUserId',
-  //       email: 'test@example.com',
-  //       passwordHash: 'hashedPassword',
-  //       sessionTokens: 'validToken',
-  //     });
-  //     await user.save();
+      (jwt.verify as jest.Mock).mockReturnValue({ userId: mockedUserId });
 
-  //     await logoutUserService('validToken');
+      const user = new User({
+        _id: mockedUserId,
+        email: 'test@example.com',
+        passwordHash: 'hashedPassword',
+        username: 'testuser',
+        sessionTokens: 'validToken',
+      });
+      await user.save();
 
-  //     const updatedUser = await User.findById('mockedUserId');
-  //     expect(updatedUser?.sessionTokens).toBe('');
-  //   });
-  // });
+      await logoutUserService('validToken');
 
-  // /**
-  //  * @forgetPasswordService
-  //  * Test goal: Test the process of users forgetting their passwords and ensure that password reset emails are sent correctly
-  //  * Test scope: Test whether the password reset token is correctly generated and sent
-  //  * The specific generation process of the token is not tested
-  //  */
-  // describe('forgetPasswordService', () => {
-  //   it('should generate a password reset token and send an email', async () => {
-  //     const user = new User({
-  //       email: 'test@example.com',
-  //       passwordHash: 'hashedPassword',
-  //       username: 'testuser',
-  //     });
-  //     await user.save();
+      const updatedUser = await User.findById(mockedUserId);
+      expect(updatedUser?.sessionTokens).toEqual('');
+    });
+  });
 
-  //     await forgetPasswordService('test@example.com');
 
-  //     const updatedUser = await User.findOne({ email: 'test@example.com' });
-  //     expect(updatedUser?.passwordResetToken).toBe('mocked_token');
-  //     expect(sendForgetPasswordEmail).toHaveBeenCalledWith('test@example.com', 'mocked_token');
-  //   });
+  /**
+   * @forgetPasswordService
+   * Test goal: Test the process of users forgetting their passwords and ensure that password reset emails are sent correctly
+   * Test scope: Test whether the password reset token is correctly generated and sent
+   * The specific generation process of the token is not tested
+   */
+  describe('forgetPasswordService', () => {
+    it('should generate a password reset token and send an email', async () => {
+      const user = new User({
+        email: 'test@example.com',
+        passwordHash: 'hashedPassword',
+        username: 'testuser',
+      });
+      await user.save();
 
-  //   it('should throw an error if the email is not found', async () => {
-  //     await expect(forgetPasswordService('nonexistent@example.com'))
-  //       .rejects
-  //       .toThrow('There is no account for this email');
-  //   });
-  // });
+      await forgetPasswordService('test@example.com');
 
-  // /**
-  //  * @resetPasswordService
-  //  * Test goal: Test the password reset function to ensure that users can successfully reset their password.
-  //  * Test scope: Test the password reset function, including token verification and new password encryption. 
-  //  * The encryption process of bcrypt is not tested.
-  //  */
-  // describe('resetPasswordService', () => {
-  //   it('should reset the password if the token is valid', async () => {
-  //     (bcrypt.hash as jest.Mock).mockResolvedValue('newHashedPassword');
+      const updatedUser = await User.findOne({ email: 'test@example.com' });
+      expect(updatedUser).toBeDefined();
+      // the reason use !. is tells the TypeScript compiler that you are confident that this variable is not null or undefined here, 
+      // and the compiler will no longer perform null checks
+      expect(updatedUser!.passwordResetToken).toBeDefined();
+      expect(updatedUser!.passwordResetToken!.length).toBe(64);
+      expect(sendForgetPasswordEmail).toHaveBeenCalledWith('test@example.com', updatedUser!.passwordResetToken);
+    });
 
-  //     const user = new User({
-  //       email: 'test@example.com',
-  //       passwordHash: 'oldHashedPassword',
-  //       username: 'testuser',
-  //       passwordResetToken: 'validToken',
-  //       passwordResetExpiresAt: new Date(Date.now() + 1000 * 60 * 60),
-  //     });
-  //     await user.save();
 
-  //     await resetPasswordService('validToken', 'newPassword123');
 
-  //     const updatedUser = await User.findOne({ email: 'test@example.com' });
-  //     expect(updatedUser?.passwordHash).toBe('newHashedPassword');
-  //   });
 
-  //   it('should throw an error if the token is invalid or expired', async () => {
-  //     const user = new User({
-  //       email: 'test@example.com',
-  //       passwordHash: 'oldHashedPassword',
-  //       username: 'testuser',
-  //       passwordResetToken: 'expiredToken',
-  //       passwordResetExpiresAt: new Date(Date.now() - 1000 * 60),
-  //     });
-  //     await user.save();
+    it('should throw an error if the email is not found', async () => {
+      await expect(forgetPasswordService('nonexistent@example.com'))
+        .rejects
+        .toThrow('There is no account for this email');
+    });
+  });
 
-  //     await expect(resetPasswordService('expiredToken', 'newPassword123'))
-  //       .rejects
-  //       .toThrow('Invalid or expired password reset link');
-  //   });
-  // });
+  /**
+   * @resetPasswordService
+   * Test goal: Test the password reset function to ensure that users can successfully reset their password.
+   * Test scope: Test the password reset function, including token verification and new password encryption. 
+   * The encryption process of bcrypt is not tested.
+   */
+  describe('resetPasswordService', () => {
+    it('should reset the password if the token is valid', async () => {
+      (bcrypt.hash as jest.Mock).mockResolvedValue('newHashedPassword');
+
+      const user = new User({
+        email: 'test@example.com',
+        passwordHash: 'oldHashedPassword',
+        username: 'testuser',
+        passwordResetToken: 'validToken',
+        passwordResetExpiresAt: new Date(Date.now() + 1000 * 60 * 60),
+      });
+      await user.save();
+
+      await resetPasswordService('validToken', 'newPassword123');
+
+      const updatedUser = await User.findOne({ email: 'test@example.com' });
+      expect(updatedUser?.passwordHash).toBe('newHashedPassword');
+    });
+
+    it('should throw an error if the token is invalid or expired', async () => {
+      const user = new User({
+        email: 'test@example.com',
+        passwordHash: 'oldHashedPassword',
+        username: 'testuser',
+        passwordResetToken: 'expiredToken',
+        passwordResetExpiresAt: new Date(Date.now() - 1000 * 60),
+      });
+      await user.save();
+
+      await expect(resetPasswordService('expiredToken', 'newPassword123'))
+        .rejects
+        .toThrow('Invalid or expired password reset link');
+    });
+  });
 
 })
