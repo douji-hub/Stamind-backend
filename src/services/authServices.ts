@@ -33,6 +33,7 @@ export const registerUserService = async (email: string, password: string, usern
 
         // ?: use Token to implement SSO, but may remove statelessness
         sessionTokens: "",
+
     });
 
     await user.save();

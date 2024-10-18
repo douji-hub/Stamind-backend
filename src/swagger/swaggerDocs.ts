@@ -11,7 +11,7 @@ export const swaggerDocs = {
     },
     servers: [
         {
-            url: `http://localhost:${PORT}`,
+            url: `http://localhost/api`,
             description: 'Local server'
         },
     ],
