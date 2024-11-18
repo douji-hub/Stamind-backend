@@ -1,27 +1,31 @@
 services:
   stamind-backend1:
-    image: douji/stamind-backend1:latest  # 使用推送到 Docker Hub 的映像檔
+    image: douji/stamind-backend1:latest # 使用推送到 Docker Hub 的映像檔
     ports:
       - "3001:3001"
     environment:
       - MONGO_URI=mongodb://mongo:27017/stamind
+      - REDIS_URL=redis://redis:6379
       - INSTANCE_NAME=stamind-backend1
     env_file:
       - .env
     depends_on:
       - mongo
+      - redis
 
   stamind-backend2:
-    image: douji/stamind-backend2:latest  # 使用推送到 Docker Hub 的映像檔
+    image: douji/stamind-backend2:latest # 使用推送到 Docker Hub 的映像檔
     ports:
       - "3002:3001"
     environment:
       - MONGO_URI=mongodb://mongo:27017/stamind
+      - REDIS_URL=redis://redis:6379
       - INSTANCE_NAME=stamind-backend2
     env_file:
       - .env
     depends_on:
       - mongo
+      - redis
 
   mongo:
     image: mongo:latest
@@ -35,15 +39,28 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   nginx:
     image: nginx:latest
     ports:
       - "80:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf  # 將本地 Nginx 組態檔案對應到 Nginx 容器
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf # 將本地 Nginx 組態檔案對應到 Nginx 容器
     depends_on:
       - stamind-backend1
       - stamind-backend2
 
 volumes:
   mongo-data:
+  redis-data:
