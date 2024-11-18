@@ -1,69 +1,66 @@
 import { ObjectId } from 'mongoose';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import * as spaceService from '../services/spaceService';
-import { configureDynamicWebSocket } from '../config/webSocketConfig';
-import Redis from 'ioredis';
 import { IRequestWithUser } from '../interfaces/globalInterface';
-import User from '../models/user';
 
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
-const redis = new Redis(REDIS_URL);
-
-// Create a new space
+// Controller to create a new space
 export const createSpace = async (req: IRequestWithUser, res: Response): Promise<void> => {
     try {
-        const user = req.user;
+        const user = req.user; // Ensure the user is authenticated
         if (!user) {
             res.status(401).json({ message: 'User not authorized' });
-            return
+            return;
         }
 
-        // Create the Space
+        // Call the service to create a space for the user
         const space = await spaceService.createSpace(user._id as ObjectId);
 
-        res.status(201).json(space);
+        res.status(201).json(space); // Respond with the created space
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error creating space' });
     }
 };
 
-// Get space details
+// Controller to fetch all spaces for a user
 export const getSpaceDetails = async (req: IRequestWithUser, res: Response) => {
     try {
-        const user = req.user;
+        const user = req.user; // Ensure the user is authenticated
         if (!user) {
             res.status(401).json({ message: 'User not authorized' });
-            return
+            return;
         }
 
+        // Call the service to fetch space details for the user
         const spaceDetails = await spaceService.getSpaceDetails(user._id as ObjectId);
-        res.status(200).json(spaceDetails);
+        res.status(200).json(spaceDetails); // Respond with the space details
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error fetching space details' });
     }
 };
 
-// delete space
+// Controller to delete a space
 export const deleteSpace = async (req: IRequestWithUser, res: Response): Promise<void> => {
     try {
-        const user = req.user;
+        const user = req.user; // Ensure the user is authenticated
         if (!user) {
             res.status(401).json({ message: 'User not authorized' });
-            return
+            return;
         }
 
-        const { spaceId } = req.body;
+        const { spaceId } = req.body; // Extract the space ID from the request body
 
+        // Call the service to delete the space
         await spaceService.deleteSpace(user._id as ObjectId, spaceId);
 
-        res.status(200).json({ message: 'Space deleted successfully' });
+        res.status(200).json({ message: 'Space deleted successfully' }); // Respond with success message
     } catch (error: any) {
         console.error(error);
+        // Handle specific errors for user or space not found
         if (error.message === 'User not found' || error.message === 'Space not found or unauthorized') {
             res.status(404).json({ message: error.message });
-            return
+            return;
         }
         res.status(500).json({ message: 'Error deleting space' });
     }
