@@ -1,35 +1,45 @@
 import app from './app';
-import mongoose from "mongoose"
-import fs from 'fs'
-import './database/mongodb'
-import http from 'http'
-import https from 'https'
+import mongoose from 'mongoose';
+import { Socket } from 'net';
+import { createServer, IncomingMessage } from 'http';
+import { getHttpsOptions } from './config/httpsConfig';
+import { handleUpgrade } from './config/webSocketConfig';
+import './config/mongodbConfig';
 
-const PORT = process.env.PORT;
-try {
-    const certKeyOption = {
-        cert: fs.readFileSync('/etc/letsencrypt/live/ccj.infocom.yzu.edu.tw/fullchain.pem'),
-        key: fs.readFileSync('/etc/letsencrypt/live/ccj.infocom.yzu.edu.tw/privkey.pem')
+
+const PORT = process.env.PORT || 3000;
+
+// setting https or http
+const httpsOptions = getHttpsOptions();
+let server;
+
+if (httpsOptions) {
+    server = require('https').createServer(httpsOptions, app);
+    console.log('Running in HTTPS mode');
+} else {
+    server = createServer(app);
+    console.log('Running in HTTP mode');
+}
+
+
+// MongoDB 
+mongoose.connection.on('error', (err) => console.error('Connection error', err));
+mongoose.connection.once('open', () => console.log('Connected to MongoDB'));
+
+// If the workspaceId exists, call the handleUpgrade function to upgrade the request to a WebSocket connection.
+// If the workspaceId does not exist, this is an incorrect request and use socket.destroy() to terminate the connection
+server.on('upgrade', (req: IncomingMessage, socket: Socket, head: Buffer) => {
+    const workspaceId = new URL(req.url || '', `http://${req.headers.host}`).searchParams.get(
+        'workspaceId'
+    );
+    if (workspaceId) {
+        handleUpgrade(workspaceId, req, socket, head);
+    } else {
+        socket.destroy();
     }
-    console.log("SSL certificates found and accessible, running in HTTPS");
-    https.createServer(certKeyOption, app).listen(PORT, () => {
-        console.log("Server is runing at " + 'https://localhost' + ":" + PORT)
-    })
-}
-catch (err) {
-    console.log("SSL certificates not found or inaccessible, falling back to HTTP");
-    http.createServer(app).listen(PORT, () => {
-        console.log("Server is runing at " + 'http://localhost' + ":" + PORT)
-    })
-}
-finally {
-    // mongodb connect testing
-    const mongoDbStatus = mongoose.connection
-    mongoDbStatus.on('error', err => console.error('connection error', err))
-    mongoDbStatus.once('open', (db) => console.log('Connection to mongodb'))
-}
+});
 
-
-
-
-
+server.listen(PORT, () => {
+    console.log(`Server is running at ${httpsOptions ? 'https' : 'http'}://localhost:${PORT}`);
+    console.log(`Swagger is running at ${httpsOptions ? 'https' : 'http'}://localhost:${PORT}/api-docs`);
+});
