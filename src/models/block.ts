@@ -1,81 +1,27 @@
-import mongoose, {Document, Schema} from "mongoose";
-
-export interface IBlockSetting {
-    color: string,
-    theme: string,
-}
-
-export interface IBlockNote {
-    noteContent: string,
-    image: Array<string>,
-}
-
-export interface IBlockCode {
-    codeContent: string,
-    codeType: string,
-}
-
-// interface IBlockAITree {
-//     gptContent: object,
-// }
+import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IBlock extends Document {
-    spaceId: string,
-    blockId: string,
-    blockName: string,
-    blockSetting: IBlockSetting,
-    isCowork: boolean,
-    coworkId: string,
-    blockContent: IBlockNote | IBlockCode,
-    blockType: 'Note' | 'Code' | 'AITree',
+    spaceId: mongoose.Types.ObjectId;
+    blockName: string
+    isCoWork: boolean;
+    coWorkId?: string
+    coworkers: mongoose.Types.ObjectId[];
+    blockContent: string;
+    blockType: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
-const BlockSchema = new Schema<IBlock>({
-    spaceId: {
-        type: String,
-        required: true,
-    },
-    blockId: {
-        type: String,
-        required: true
-    },
-    blockName: {
-        type: String,
-        required: true,
-    },
-    blockSetting: {
-        color: {
-            type: String,
-            required: true,
-        },
-        theme: {
-            type: String,
-            required: true,
-        }
-        // TODO: 未來有增加可放於此
-    },
-    isCowork: {
-        type: Boolean,
-        required: true,
-        default: false,
-    },
-    coworkId: {
-        type: String,
-        default: '',
-    },
-    blockContent: {
-        type: Object,
-        required: true,
-    },
-    blockType: {
-        type: String,
-        enum: ['Note', 'Code', 'AITree'],
-        required: true
-    }
+const BlockSchema: Schema = new Schema({
+    spaceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Space', required: true },
+    blockName: { type: String, required: true },
+    isCoWork: { type: Boolean, default: false },
+    coWorkId: { type: String },
+    coworkers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    blockContent: { type: String, default: '' },
+    blockType: { type: String, enum: ['block_note', 'block_coding', 'block_LLM'], required: true },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
+});
 
-
-}, {
-    timestamps: true
-})
-
-export default mongoose.model<IBlock>('blocks', BlockSchema)
+export default mongoose.model<IBlock>('Block', BlockSchema);
