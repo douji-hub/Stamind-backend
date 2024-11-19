@@ -37,6 +37,7 @@ export const blockSwagger = {
         },
     },
 
+    // GET & PUT: Block operations by ID
     '/block/{blockId}': {
         get: {
             summary: 'Retrieve block details by ID',
@@ -120,8 +121,34 @@ export const blockSwagger = {
             },
             security: [{ bearerAuth: [] }],
         },
+        delete: {
+            summary: 'Delete a block by ID',
+            tags: ['Block'],
+            parameters: [
+                {
+                    in: 'path',
+                    name: 'blockId',
+                    schema: {
+                        type: 'string',
+                    },
+                    required: true,
+                    description: 'The ID of the block',
+                },
+            ],
+            responses: {
+                200: {
+                    description: 'Block deleted successfully',
+                },
+                404: {
+                    description: 'Block not found',
+                },
+                500: {
+                    description: 'Error occurred while deleting the block',
+                },
+            },
+            security: [{ bearerAuth: [] }],
+        },
     },
-
 
     // POST: Create a new Block
     '/block/{spaceId}/createBlock': {
@@ -303,5 +330,4 @@ export const blockSwagger = {
             security: [{ bearerAuth: [] }],
         },
     },
-
 };
