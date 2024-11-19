@@ -1,15 +1,24 @@
 import express from 'express';
 import {
     createSpace,
-    getSpaceDetails,
-    deleteSpace
+    getAllSpaces,
+    getSpaceById,
+    deleteSpace,
 } from '../controllers/spaceController';
 import { authMiddleware } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
-router.get('/getSpaceDetails', authMiddleware, getSpaceDetails);
-router.post('/createSpace', authMiddleware, createSpace);
-router.delete('/deleteSpace', authMiddleware, deleteSpace);
+// Create a new space
+router.post('/', authMiddleware, createSpace);
+
+// Get all spaces for the authenticated user
+router.get('/', authMiddleware, getAllSpaces);
+
+// Get a specific space by ID
+router.get('/:spaceId', authMiddleware, getSpaceById);
+
+// Delete a specific space
+router.delete('/:spaceId', authMiddleware, deleteSpace);
 
 export default router;
