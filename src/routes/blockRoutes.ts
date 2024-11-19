@@ -2,22 +2,35 @@ import express from 'express';
 import {
     createBlock,
     getBlockById,
-    getBlocksBySpaceId,
     updateBlock,
-    initializeBlockSocket,
+    deleteBlock,
     generateBlockPin,
-    joinSharedBlock
+    joinSharedBlock,
+    initializeBlockSocket
 } from '../controllers/blockController';
 import { authMiddleware } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
-router.get('/:blockId', authMiddleware, getBlockById);
-router.get('/:spaceId/blocks', authMiddleware, getBlocksBySpaceId);
-router.put('/:blockId', authMiddleware, updateBlock);
-router.post('/:spaceId/createBlock', authMiddleware, createBlock);
-router.post('/:blockId/generatePin', authMiddleware, generateBlockPin);
+// Join a shared block using a PIN code
 router.post('/join', authMiddleware, joinSharedBlock);
-router.post('/initializeBlockSocket', authMiddleware, initializeBlockSocket);
+
+// Create a new block under a specific space
+router.post('/:spaceId', authMiddleware, createBlock);
+
+// Get a specific block by ID
+router.get('/:blockId', authMiddleware, getBlockById);
+
+// Update a block
+router.put('/:blockId', authMiddleware, updateBlock);
+
+// Delete a block
+router.delete('/:blockId', authMiddleware, deleteBlock);
+
+// Generate a PIN code to share a block
+router.post('/:blockId/generatePin', authMiddleware, generateBlockPin);
+
+// Initialize a WebSocket for a block
+router.post('/:blockId/connect', authMiddleware, initializeBlockSocket);
 
 export default router;

@@ -1,8 +1,8 @@
-import mongoose, { ObjectId } from 'mongoose';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { configureDynamicWebSocket } from '../config/webSocketConfig';
 import * as blockService from '../services/blockService';
 import { IRequestWithUser } from '../interfaces/globalInterface';
+import mongoose from 'mongoose';
 
 // Controller to create a new block under a specific space
 export const createBlock = async (req: IRequestWithUser, res: Response): Promise<void> => {
@@ -41,15 +41,29 @@ export const getBlockById = async (req: Request, res: Response): Promise<void> =
     }
 };
 
-// Controller to fetch all blocks under a specific space
-export const getBlocksBySpaceId = async (req: Request, res: Response): Promise<void> => {
+
+// Controller to update a block's details
+export const updateBlock = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { spaceId } = req.params; // Extract spaceId from request parameters
-        const blocks = await blockService.getBlocksBySpaceId(spaceId); // Get blocks from the service
-        res.status(200).json(blocks); // Return the list of blocks
-    } catch (error) {
+        const { blockId } = req.params; // Extract blockId from request parameters
+        const updates = req.body; // Extract updates from the request body
+        const updatedBlock = await blockService.updateBlock(blockId, updates); // Update the block in the service
+        res.status(200).json(updatedBlock); // Return the updated block
+    } catch (error: any) {
         console.error(error);
-        res.status(500).json({ message: 'Error fetching blocks' });
+        res.status(500).json({ message: 'Error updating block', error: error.message });
+    }
+};
+
+// Controller to delete a block
+export const deleteBlock = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { blockId } = req.params; // Extract blockId from request parameters
+        await blockService.deleteBlock(blockId); // Delete the block in the service
+        res.status(200).json({ message: 'Block deleted successfully' }); // Return success message
+    } catch (error: any) {
+        console.error(error);
+        res.status(500).json({ message: 'Error deleting block', error: error.message });
     }
 };
 
@@ -83,23 +97,10 @@ export const joinSharedBlock = async (req: IRequestWithUser, res: Response): Pro
     }
 };
 
-// Controller to update a block's details
-export const updateBlock = async (req: Request, res: Response): Promise<void> => {
+// Controller to initialize a WebSocket for a block
+export const initializeBlockSocket = async (req: Request, res: Response): Promise<void> => {
     try {
         const { blockId } = req.params; // Extract blockId from request parameters
-        const updates = req.body; // Extract updates from the request body
-        const updatedBlock = await blockService.updateBlock(blockId, updates); // Update the block in the service
-        res.status(200).json(updatedBlock); // Return the updated block
-    } catch (error: any) {
-        console.error(error);
-        res.status(500).json({ message: 'Error updating block', error: error.message });
-    }
-};
-
-// Controller to initialize a WebSocket for a block
-export const initializeBlockSocket = async (req: Request, res: Response) => {
-    try {
-        const { blockId } = req.body; // Extract blockId from request body
 
         configureDynamicWebSocket(blockId); // Initialize WebSocket connection for the block
 

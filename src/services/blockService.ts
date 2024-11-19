@@ -1,8 +1,8 @@
 import crypto from 'crypto';
-import mongoose, { ObjectId } from 'mongoose';
+import mongoose from 'mongoose';
 import BlockModel, { IBlock } from '../models/block';
 import SpaceModel from '../models/space';
-import User from "../models/user"
+import User from '../models/user';
 
 /**
  * @desc Create a new block under a space
@@ -14,19 +14,19 @@ export const createBlock = async (
     spaceId: string,
     blockData: Partial<IBlock>
 ): Promise<IBlock> => {
-    // 確認 Space 是否存在且屬於該用戶
+    // Confirm that the space exists
     const space = await SpaceModel.findById(spaceId);
     if (!space) {
         throw new Error('Space not found');
     }
 
-    // 創建新的 Block
+    // Create a new Block
     const block = await BlockModel.create({
         ...blockData,
         spaceId,
     });
 
-    // 將 Block ID 添加到 Space 的 blocks 列表中
+    // Add Block ID to the Space's blocks list
     space.blocks.push(block._id as mongoose.Types.ObjectId);
     await space.save();
 
@@ -47,14 +47,52 @@ export const getBlockById = async (blockId: string): Promise<IBlock> => {
 };
 
 /**
- * @desc Get all blocks under a space
- * @param spaceId - The ID of the space
- * @returns An array of blocks
+ * @desc Update a block's content or properties
+ * @param blockId - The ID of the block to update
+ * @param updates - The updates to apply
+ * @returns The updated block
  */
-export const getBlocksBySpaceId = async (spaceId: string): Promise<IBlock[]> => {
-    const blocks = await BlockModel.find({ spaceId });
-    return blocks;
+export const updateBlock = async (
+    blockId: string,
+    updates: Partial<IBlock>
+): Promise<IBlock> => {
+    const block = await BlockModel.findByIdAndUpdate(
+        blockId,
+        { ...updates, updatedAt: new Date() },
+        { new: true }
+    );
+    if (!block) {
+        throw new Error('Block not found');
+    }
+    return block;
 };
+
+/**
+ * @desc Delete a block
+ * @param blockId - The ID of the block to delete
+ * @returns void
+ */
+export const deleteBlock = async (blockId: string): Promise<void> => {
+    const block = await BlockModel.findById(blockId);
+    if (!block) {
+        throw new Error('Block not found');
+    }
+
+    // Remove the block ID from its associated space's blocks array
+    await SpaceModel.findByIdAndUpdate(block.spaceId, { $pull: { blocks: block._id } });
+
+    // Remove the block ID from the coBlocks array of each coworker
+    const coworkerIds = block.coworkers;
+
+    // Iterate over each coworker and remove the block ID from their coBlocks array
+    await Promise.all(coworkerIds.map(async (userId) => {
+        await User.findByIdAndUpdate(userId, { $pull: { coBlocks: block._id } });
+    }));
+
+    // Delete the block
+    await BlockModel.findByIdAndDelete(blockId);
+};
+
 
 /**
  * @desc Generate a PIN code to share a block
@@ -67,7 +105,7 @@ export const generateBlockPin = async (blockId: string): Promise<IBlock> => {
         throw new Error('Block not found');
     }
 
-    // 生成 6 位數的 PIN 碼
+    // Generate a 6-digit PIN code
     const pinCode = crypto.randomInt(100000, 999999).toString();
 
     block.isCoWork = true;
@@ -92,39 +130,18 @@ export const joinSharedBlock = async (
         throw new Error('Invalid PIN code or block is not shared');
     }
 
-    // 將用戶添加到 block 的 coworkers 中
+    // Add the user to the block's coworkers
     if (!block.coworkers.includes(userId)) {
         block.coworkers.push(userId);
         await block.save();
     }
 
-    // 將 Block 添加到用戶的 coBlocks 列表中
+    // Add the block to the user's coBlocks list
     const user = await User.findById(userId);
     if (user && !user.coBlocks.includes(block._id as mongoose.Types.ObjectId)) {
         user.coBlocks.push(block._id as mongoose.Types.ObjectId);
         await user.save();
     }
 
-    return block;
-};
-
-/**
- * @desc Update a block's content or properties
- * @param blockId - The ID of the block to update
- * @param updates - The updates to apply
- * @returns The updated block
- */
-export const updateBlock = async (
-    blockId: string,
-    updates: Partial<IBlock>
-): Promise<IBlock> => {
-    const block = await BlockModel.findByIdAndUpdate(
-        blockId,
-        { ...updates, updatedAt: new Date() },
-        { new: true }
-    );
-    if (!block) {
-        throw new Error('Block not found');
-    }
     return block;
 };
