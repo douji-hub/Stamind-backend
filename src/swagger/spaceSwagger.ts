@@ -93,8 +93,59 @@ export const spaceSwagger = {
         },
     },
 
-    // DELETE: Delete a Space
+    // GET & DELETE: Get a specific space by ID or delete a space
     '/space/{spaceId}': {
+        get: {
+            summary: 'Get a specific space by its ID',
+            tags: ['Space'],
+            parameters: [
+                {
+                    in: 'path',
+                    name: 'spaceId',
+                    schema: {
+                        type: 'string',
+                    },
+                    required: true,
+                    description: 'The ID of the space to retrieve',
+                },
+                {
+                    in: 'query',
+                    name: 'userId',
+                    schema: {
+                        type: 'string',
+                    },
+                    required: true,
+                    description: 'The ID of the user requesting the space details',
+                },
+            ],
+            responses: {
+                200: {
+                    description: 'Space details retrieved successfully',
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    _id: { type: 'string', example: '60d5ec49c0d6b34d887af456' },
+                                    blocks: {
+                                        type: 'array',
+                                        items: { type: 'string' },
+                                        example: ['60d5ec49c0d6b34d887af789'],
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                404: {
+                    description: 'Space not found or unauthorized',
+                },
+                500: {
+                    description: 'Error occurred while retrieving the space details',
+                },
+            },
+            security: [{ bearerAuth: [] }],
+        },
         delete: {
             summary: 'Delete a space by its ID and associated blocks',
             tags: ['Space'],
