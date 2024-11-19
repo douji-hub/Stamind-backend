@@ -3,7 +3,11 @@ import SpaceModel from '../models/space';
 import BlockModel from '../models/block';
 import User from '../models/user';
 
-// Service to create a new space
+/**
+ * @desc Create a new space
+ * @param userID - The ID of the user creating the space
+ * @returns The created space
+ */
 export const createSpace = async (userID: ObjectId) => {
     const space = await SpaceModel.create({ blocks: [] });
 
@@ -13,7 +17,11 @@ export const createSpace = async (userID: ObjectId) => {
     return space;
 };
 
-// Service to get all spaces for a user
+/**
+ * @desc Get all spaces for a user
+ * @param userId - The ID of the user
+ * @returns An array of spaces belonging to the user
+ */
 export const getAllSpaces = async (userId: ObjectId) => {
     const user = await User.findById(userId);
     if (!user) {
@@ -24,7 +32,12 @@ export const getAllSpaces = async (userId: ObjectId) => {
     return SpaceModel.find({ _id: { $in: user.spaces } }).populate('blocks');
 };
 
-// Service to get a specific space by its ID
+/**
+ * @desc Get a specific space by its ID
+ * @param userId - The ID of the user
+ * @param spaceId - The ID of the space to retrieve
+ * @returns The requested space along with its associated blocks
+ */
 export const getSpaceById = async (userId: ObjectId, spaceId: string) => {
     const user = await User.findById(userId);
     if (!user) {
@@ -39,7 +52,12 @@ export const getSpaceById = async (userId: ObjectId, spaceId: string) => {
     return SpaceModel.findById(spaceObjectId).populate('blocks');
 };
 
-// Service to delete a specific space by its ID
+/**
+ * @desc Delete a specific space by its ID
+ * @param userId - The ID of the user requesting deletion
+ * @param spaceId - The ID of the space to delete
+ * @returns void
+ */
 export const deleteSpace = async (userId: ObjectId, spaceId: string): Promise<void> => {
     const user = await User.findById(userId);
     if (!user) {
