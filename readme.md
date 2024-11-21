@@ -128,3 +128,4 @@ Stamind-backend/
 - `.git/`：git action 設定。
 - `Dockerfile`：Application docker setting。
 - `docker-compose.yaml`：docker compose 設定。
+TESTING
