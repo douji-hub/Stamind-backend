@@ -13,11 +13,15 @@ dotenv.config();
 const app = express();
 
 //用於解析json row txt URL-encoded格式
-const urlencodedParser = bodyParser.urlencoded({extended: false})
+const urlencodedParser = bodyParser.urlencoded({ extended: false })
 app.use(bodyParser.json())
 app.use(urlencodedParser)
 app.use(cookieParser())
-
+app.use(cors({
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}))
 /**
  * TODO: Error handling: A global error handling middleware can be introduced to handle exceptions uniformly and avoid repeated error handling.
  * TODO: Logging: Use log libraries such as winston or morgan to record request and error information to facilitate debugging and monitoring
