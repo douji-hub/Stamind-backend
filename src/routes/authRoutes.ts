@@ -5,7 +5,8 @@ import {
     loginController,
     logoutController,
     forgotPasswordController,
-    resetPasswordController
+    resetPasswordController,
+    resendEmailController
 } from '../controllers/authController';
 import { authMiddleware } from '../middlewares/authMiddleware';
 
@@ -13,6 +14,7 @@ const router = express.Router();
 
 router.post('/register', registerController);
 router.get('/verifyEmail/:token', verifyEmailController);
+router.post('/resendEmail', resendEmailController);
 router.post('/login', loginController);
 router.post('/logout', authMiddleware, logoutController);
 router.post('/forgotPassword', forgotPasswordController);

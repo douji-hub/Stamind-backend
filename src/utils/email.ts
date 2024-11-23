@@ -13,7 +13,7 @@ export const sendVerificationEmail = async (to: string, token: string) => {
     });
 
     try {
-        const verificationLink = `http://localhost/api/auth/verifyEmail/${token}`;
+        const verificationLink = `http://localhost:3001/api/auth/verifyEmail/${token}`;
 
         await transporter.sendMail({
             from: '"StackMind" <no-reply@example.com>',

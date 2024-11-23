@@ -5,7 +5,8 @@ import {
     loginUserService,
     logoutUserService,
     forgetPasswordService,
-    resetPasswordService
+    resetPasswordService,
+    resendEmailService
 } from '../services/authServices';
 import { IRequestWithUser } from "../interfaces/globalInterface";
 
@@ -26,6 +27,17 @@ export const verifyEmailController = async (req: Request, res: Response) => {
         const { token } = req.params;
         await verifyEmailTokenService(token); // Call the service to verify the token
         res.json({ message: 'Account verification successful, you can log in now' });
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// Controller for resend email
+export const resendEmailController = async (req: Request, res: Response) => {
+    try {
+        const { email } = req.body;
+        await resendEmailService(email);
+        res.json({ message: 'resend successfully' });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }

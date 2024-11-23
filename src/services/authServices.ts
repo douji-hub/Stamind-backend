@@ -62,6 +62,30 @@ export const verifyEmailTokenService = async (token: string): Promise<void> => {
 };
 
 /**
+ * @desc resend mail
+ * @param email email from frontend
+ * @throws throw an error when token expired
+ */
+export const resendEmailService = async (email: string): Promise<void> => {
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    const updatedUser = await User.findOneAndUpdate(
+        { email },
+        { verificationToken, verificationTokenExpiresAt },
+        { new: true }
+    );
+
+    if (!updatedUser) {
+        throw new Error('wrong user');
+    }
+
+    // send verification email
+    await sendVerificationEmail(updatedUser.email, verificationToken);
+
+};
+
+/**
  * @desc Login in email and password
  * @param email user's email
  * @param password user's password
