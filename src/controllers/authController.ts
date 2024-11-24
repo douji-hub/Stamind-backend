@@ -47,8 +47,9 @@ export const resendEmailController = async (req: Request, res: Response) => {
 export const loginController = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
-        const token = await loginUserService(email, password); // Call the service to log in the user
-        res.json({ token }); // Respond with the generated token
+        const { token, userId } = await loginUserService(email, password);
+
+        res.json({ token, userId });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }
