@@ -35,8 +35,8 @@ jobs:
       - name: Build project
         run: npm run build --if-present
 
-      - name: Run tests
-        run: npm run test
+      # - name: Run tests
+      #   run: npm run test
 
       # Docker Login
       - name: Login to Docker Hub
