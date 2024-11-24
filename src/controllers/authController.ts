@@ -24,8 +24,8 @@ export const registerController = async (req: Request, res: Response) => {
 // Controller for verifying the email token
 export const verifyEmailController = async (req: Request, res: Response) => {
     try {
-        const { token } = req.params;
-        await verifyEmailTokenService(token); // Call the service to verify the token
+        const { token } = req.query;
+        await verifyEmailTokenService(token as string); // Call the service to verify the token
         res.redirect(302, 'http://localhost:3000/auth/login');
     } catch (error: any) {
         res.status(400).json({ message: error.message });

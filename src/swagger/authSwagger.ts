@@ -1,62 +1,10 @@
 export const authSwagger = {
-    // GET
-    '/auth/verifyEmail/{token}': {
-        get: {
-            summary: 'Verify email using a token',
-            tags: ['Auth'],
-            parameters: [
-                {
-                    in: 'path',
-                    name: 'token',
-                    schema: {
-                        type: 'string',
-                    },
-                    required: true,
-                    description: 'Email verification token',
-                },
-            ],
-            responses: {
-                200: {
-                    description: 'Account verification successful',
-                },
-                400: {
-                    description: 'Invalid token or verification failed',
-                },
-            },
-        },
-    },
+    // Other endpoints...
 
-    // POST
-    '/auth/register': {
+    // POST and DELETE /sessions - User login and logout
+    '/sessions': {
         post: {
-            summary: 'Register a new user',
-            tags: ['Auth'],
-            requestBody: {
-                required: true,
-                content: {
-                    'application/json': {
-                        schema: {
-                            type: 'object',
-                            required: ['email', 'password', 'username'],
-                            properties: {
-                                email: { type: 'string', example: 'user@example.com' },
-                                password: { type: 'string', example: 'password123' },
-                                username: { type: 'string', example: 'Jim' },
-                            },
-                        },
-                    },
-                },
-            },
-            responses: {
-                201: { description: 'The data has been written into the database and needs to be verified' },
-                400: { description: 'Invalid input or registration error' },
-            },
-        },
-    },
-
-    '/auth/login': {
-        post: {
-            summary: 'Login a user',
+            summary: 'User login',
             tags: ['Auth'],
             requestBody: {
                 required: true,
@@ -81,7 +29,7 @@ export const authSwagger = {
             },
             responses: {
                 200: {
-                    description: 'Successful login',
+                    description: 'Login successful',
                     content: {
                         'application/json': {
                             schema: {
@@ -90,6 +38,10 @@ export const authSwagger = {
                                     token: {
                                         type: 'string',
                                         example: 'JWT token',
+                                    },
+                                    userId: {
+                                        type: 'string',
+                                        example: '60d0fe4f5311236168a109ca',
                                     },
                                 },
                             },
@@ -101,11 +53,8 @@ export const authSwagger = {
                 },
             },
         },
-    },
-
-    '/auth/logout': {
-        post: {
-            summary: 'Logout a user',
+        delete: {
+            summary: 'User logout',
             tags: ['Auth'],
             security: [{ bearerAuth: [] }],
             responses: {
@@ -122,54 +71,64 @@ export const authSwagger = {
         },
     },
 
-    '/auth/forgotPassword': {
+    // Other endpoints...
+
+    // Ensure other paths are unique and don't have duplicate keys
+    '/users': {
         post: {
-            summary: 'Send password reset email',
+            summary: 'Register a new user',
             tags: ['Auth'],
-            requestBody: {
-                required: true,
-                content: {
-                    'application/json': {
-                        schema: {
-                            type: 'object',
-                            required: ['email'],
-                            properties: {
-                                email: {
-                                    type: 'string',
-                                    example: 'user@example.com',
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-            responses: {
-                200: {
-                    description: 'Password reset email has been sent',
-                },
-                400: {
-                    description: 'Invalid email or request failed',
-                },
-            },
+            // ... rest of the definition
         },
     },
 
-    '/auth/resetPassword': {
+    '/users/verify': {
         post: {
-            summary: 'Reset password',
+            summary: 'Verify user email using a token',
             tags: ['Auth'],
+            // ... rest of the definition
+        },
+    },
+
+    '/users/resend-verification': {
+        post: {
+            summary: 'Resend verification email',
+            tags: ['Auth'],
+            // ... rest of the definition
+        },
+    },
+
+    '/password-resets': {
+        post: {
+            summary: 'Initiate password reset process',
+            tags: ['Auth'],
+            // ... rest of the definition
+        },
+    },
+
+    '/password-resets/{token}': {
+        put: {
+            summary: 'Reset password using a token',
+            tags: ['Auth'],
+            parameters: [
+                {
+                    in: 'path',
+                    name: 'token',
+                    required: true,
+                    schema: {
+                        type: 'string',
+                    },
+                    description: 'Password reset token',
+                },
+            ],
             requestBody: {
                 required: true,
                 content: {
                     'application/json': {
                         schema: {
                             type: 'object',
-                            required: ['token', 'newPassword'],
+                            required: ['newPassword'],
                             properties: {
-                                token: {
-                                    type: 'string',
-                                    example: 'reset-token',
-                                },
                                 newPassword: {
                                     type: 'string',
                                     example: 'newpassword123',
@@ -181,7 +140,7 @@ export const authSwagger = {
             },
             responses: {
                 200: {
-                    description: 'Password reset successful, you can login now',
+                    description: 'Password reset successful, you can now login',
                 },
                 400: {
                     description: 'Invalid token or password reset failed',
