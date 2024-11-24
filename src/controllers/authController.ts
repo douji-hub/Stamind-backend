@@ -35,8 +35,8 @@ export const verifyEmailController = async (req: Request, res: Response) => {
 // Controller for resend email
 export const resendEmailController = async (req: Request, res: Response) => {
     try {
-        const { email } = req.body;
-        await resendEmailService(email);
+        const { email, emailType } = req.body;
+        await resendEmailService(email, emailType);
         res.json({ message: 'resend successfully' });
     } catch (error: any) {
         res.status(400).json({ message: error.message });

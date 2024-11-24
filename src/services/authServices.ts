@@ -67,23 +67,41 @@ export const verifyEmailTokenService = async (token: string): Promise<void> => {
  * @param email email from frontend
  * @throws throw an error when token expired
  */
-export const resendEmailService = async (email: string): Promise<void> => {
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+export const resendEmailService = async (email: string, emailType: string): Promise<void> => {
+    if (emailType == "verify") {
 
-    const updatedUser = await User.findOneAndUpdate(
-        { email },
-        { verificationToken, verificationTokenExpiresAt },
-        { new: true }
-    );
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        const passwordResetExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
-    if (!updatedUser) {
-        throw new Error('wrong user');
+        const updatedUser = await User.findOneAndUpdate(
+            { email },
+            { verificationToken, passwordResetExpiresAt },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            throw new Error('wrong user');
+        }
+
+        // send verification email
+        await sendVerificationEmail(updatedUser.email, verificationToken);
     }
+    else if (emailType == "reset") {
+        const passwordResetToken = crypto.randomBytes(32).toString('hex');
+        const passwordResetExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
-    // send verification email
-    await sendVerificationEmail(updatedUser.email, verificationToken);
+        const updatedUser = await User.findOneAndUpdate(
+            { email },
+            { passwordResetToken, passwordResetExpiresAt },
+            { new: true }
+        );
 
+        if (!updatedUser) {
+            throw new Error('wrong user');
+        }
+
+        await sendForgetPasswordEmail(updatedUser.email, passwordResetToken);
+    }
 };
 
 /**
