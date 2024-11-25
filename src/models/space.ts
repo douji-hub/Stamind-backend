@@ -1,26 +1,15 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface ISpace extends Document {
-    spaceId: string,
-    blocks: mongoose.Types.ObjectId[];
-    nowBlock: number,
+    blocks: mongoose.Types.ObjectId[]; // List of block IDs belonging to the space
+    createdAt: Date;
+    updatedAt: Date;
 }
 
-const spaceSchema = new Schema<ISpace>({
-    spaceId: {
-        type: String,
-        required: true,
-    },
-    blocks: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Block'
-    }],
-    nowBlock: {
-        type: Number,
-        required: true,
-    }
-}, {
-    timestamps: true
-})
+const SpaceSchema: Schema = new Schema({
+    blocks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Block' }], // Reference to associated blocks
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
+});
 
-export default mongoose.model<ISpace>('spaces', spaceSchema)
+export default mongoose.model<ISpace>('Space', SpaceSchema);

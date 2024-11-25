@@ -12,6 +12,7 @@ export interface IUser extends Document {
     passwordResetExpiresAt?: Date;
     lastLoginTime?: Date;
     spaces: mongoose.Types.ObjectId[];
+    coBlocks: mongoose.Types.ObjectId[];
     sessionTokens?: string;
     nowSpace?: number;
 }
@@ -28,6 +29,7 @@ const UserSchema: Schema<IUser> = new Schema({
     passwordResetExpiresAt: { type: Date },
     lastLoginTime: { type: Date },
     spaces: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Space' }],
+    coBlocks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Block' }],
     sessionTokens: { type: String },
     nowSpace: {
         type: Number

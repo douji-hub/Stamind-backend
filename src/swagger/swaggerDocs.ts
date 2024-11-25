@@ -1,4 +1,6 @@
 import { authSwagger } from './authSwagger';
+import { blockSwagger } from './blockSwagger';
+import { spaceSwagger } from './spaceSwagger';
 
 const PORT = 3001;
 
@@ -31,5 +33,7 @@ export const swaggerDocs = {
     ],
     paths: {
         ...authSwagger,
+        ...blockSwagger,
+        ...spaceSwagger
     },
 };

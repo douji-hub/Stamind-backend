@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
-import {Response, NextFunction} from 'express';
-import {IRequestWithUser} from "../interfaces/globalInterface";
-import User, {IUser} from '../models/user';
+import { Response, NextFunction } from 'express';
+import { IRequestWithUser } from "../interfaces/globalInterface";
+import User, { IUser } from '../models/user';
 
 
 export const authMiddleware = async (req: IRequestWithUser, res: Response, next: NextFunction) => {
@@ -11,12 +11,12 @@ export const authMiddleware = async (req: IRequestWithUser, res: Response, next:
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader) {
-            res.status(401).json({message: 'Authorization header not provided'});
+            res.status(401).json({ message: 'Authorization header not provided' });
             return
         }
 
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            res.status(401).json({message: 'Unprovided or malformed authorization header'});
+            res.status(401).json({ message: 'Unprovided or malformed authorization header' });
             return
         }
 
@@ -25,10 +25,10 @@ export const authMiddleware = async (req: IRequestWithUser, res: Response, next:
 
         const user: IUser | null = await User.findById(decoded.userId);
         if (!user) {
-            res.status(401).json({message: 'User is not exist'})
+            res.status(401).json({ message: 'User is not exist' })
             return
         } else if (user.sessionTokens != token) {
-            res.status(401).json({message: 'Unauthorized request'})
+            res.status(401).json({ message: 'Unauthorized request' })
             return
         }
 
@@ -37,7 +37,7 @@ export const authMiddleware = async (req: IRequestWithUser, res: Response, next:
         req.user = user
         next()
     } catch (error: any) {
-        res.status(401).json({message: 'Authorization failed', error: error.message})
+        res.status(401).json({ message: 'Authorization failed', error: error.message })
         return
     }
 };
