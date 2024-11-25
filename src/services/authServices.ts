@@ -3,6 +3,7 @@ import User from '../models/user';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { sendVerificationEmail, sendForgetPasswordEmail } from '../utils/email';
+import mongoose from 'mongoose';
 
 /**
  * @desc Register
@@ -62,14 +63,58 @@ export const verifyEmailTokenService = async (token: string): Promise<void> => {
 };
 
 /**
+ * @desc resend mail
+ * @param email email from frontend
+ * @throws throw an error when token expired
+ */
+export const resendEmailService = async (email: string, emailType: string): Promise<void> => {
+    if (emailType == "verify") {
+
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        const passwordResetExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+
+        const updatedUser = await User.findOneAndUpdate(
+            { email },
+            { verificationToken, passwordResetExpiresAt },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            throw new Error('wrong user');
+        }
+
+        // send verification email
+        await sendVerificationEmail(updatedUser.email, verificationToken);
+    }
+    else if (emailType == "reset") {
+        const passwordResetToken = crypto.randomBytes(32).toString('hex');
+        const passwordResetExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+
+        const updatedUser = await User.findOneAndUpdate(
+            { email },
+            { passwordResetToken, passwordResetExpiresAt },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            throw new Error('wrong user');
+        }
+
+        await sendForgetPasswordEmail(updatedUser.email, passwordResetToken);
+    }
+};
+
+/**
  * @desc Login in email and password
  * @param email user's email
  * @param password user's password
  * @throws throw an error when invalid email or password
  * @throws throw an error when account not verify
  */
-export const loginUserService = async (email: string, password: string): Promise<string> => {
-
+export const loginUserService = async (
+    email: string,
+    password: string
+): Promise<{ token: string; userId: string }> => {
     const JWT_SECRET: string = process.env.JWT_SECRET || '';
 
     const user = await User.findOne({ email });
@@ -77,32 +122,33 @@ export const loginUserService = async (email: string, password: string): Promise
     // check user
     if (!user) {
         throw new Error('Invalid email or password');
-    } else {
-        // check password
-        const isMatch = await bcrypt.compare(password, user.passwordHash);
-        if (!isMatch) {
-            throw new Error('Invalid email or password');
-        }
-
-        // check account is verified
-        if (!user.isVerified) {
-            throw new Error('Account not verified yet, please check your email');
-        }
-
-        // JWT Token
-        const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '7d' });
-
-        // update last login time and JWT Token
-        user.lastLoginTime = new Date();
-
-        // ?: use Token to implement SSO, but may remove statelessness
-        user.sessionTokens = token
-
-        await user.save();
-
-        return token;
     }
+
+    // check password
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!isMatch) {
+        throw new Error('Invalid email or password');
+    }
+
+    // check account is verified
+    if (!user.isVerified) {
+        throw new Error('Account not verified yet, please check your email');
+    }
+
+    // JWT Token
+    const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '7d' });
+
+    // update last login time and JWT Token
+    user.lastLoginTime = new Date();
+
+    // ?: use Token to implement SSO, but may remove statelessness
+    user.sessionTokens = token;
+
+    await user.save();
+
+    return { token, userId: (user._id as mongoose.Types.ObjectId).toString() };
 };
+
 
 /**
  * @desc Logout

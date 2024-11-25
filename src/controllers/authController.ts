@@ -5,7 +5,8 @@ import {
     loginUserService,
     logoutUserService,
     forgetPasswordService,
-    resetPasswordService
+    resetPasswordService,
+    resendEmailService
 } from '../services/authServices';
 import { IRequestWithUser } from "../interfaces/globalInterface";
 
@@ -23,9 +24,20 @@ export const registerController = async (req: Request, res: Response) => {
 // Controller for verifying the email token
 export const verifyEmailController = async (req: Request, res: Response) => {
     try {
-        const { token } = req.params;
-        await verifyEmailTokenService(token); // Call the service to verify the token
-        res.json({ message: 'Account verification successful, you can log in now' });
+        const { token } = req.query;
+        await verifyEmailTokenService(token as string); // Call the service to verify the token
+        res.redirect(302, 'http://localhost:3000/auth/login');
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// Controller for resend email
+export const resendEmailController = async (req: Request, res: Response) => {
+    try {
+        const { email, emailType } = req.body;
+        await resendEmailService(email, emailType);
+        res.json({ message: 'resend successfully' });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }
@@ -35,8 +47,9 @@ export const verifyEmailController = async (req: Request, res: Response) => {
 export const loginController = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
-        const token = await loginUserService(email, password); // Call the service to log in the user
-        res.json({ token }); // Respond with the generated token
+        const { token, userId } = await loginUserService(email, password);
+
+        res.json({ token, userId });
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }

@@ -1,3 +1,4 @@
+// routes/authRoutes.ts
 import express from 'express';
 import {
     registerController,
@@ -5,18 +6,19 @@ import {
     loginController,
     logoutController,
     forgotPasswordController,
-    resetPasswordController
+    resetPasswordController,
+    resendEmailController
 } from '../controllers/authController';
 import { authMiddleware } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
-router.post('/register', registerController);
-router.get('/verifyEmail/:token', verifyEmailController);
-router.post('/login', loginController);
-router.post('/logout', authMiddleware, logoutController);
-router.post('/forgotPassword', forgotPasswordController);
-router.post('/resetPassword', resetPasswordController);
-
+router.post('/users', registerController); // register
+router.get('/users/verify', verifyEmailController); //verifyEmail
+router.post('/users/resend', resendEmailController);// resend email
+router.post('/sessions', loginController); // login
+router.delete('/sessions', authMiddleware, logoutController); // logout
+router.post('/password-resets', forgotPasswordController); // forget password
+router.put('/password-resets', resetPasswordController); // reset
 
 export default router;
